@@ -171,9 +171,6 @@ class PhotometryTab(ttk.Frame):
                   text="Offset = (photometer second) - (event second)\nPositive if photometer triggered earlier",
                   font=('Helvetica', 8), foreground='gray').pack(anchor='w')
 
-        # Sync button
-        ttk.Button(frame, text="Sync from Home Tab", command=self._sync_from_home).pack(pady=2)
-
         # Apply offset button
         ttk.Button(frame, text="Apply Second Offset", command=self._apply_offset).pack(pady=2)
 
@@ -274,8 +271,15 @@ class PhotometryTab(ttk.Frame):
                    command=self._export_png).pack(fill=tk.X, pady=2)
         ttk.Button(frame, text="💾 Export Data (CSV)",
                    command=self._export_csv).pack(fill=tk.X, pady=2)
-        ttk.Button(frame, text="📋 Save to Project",
-                   command=self._save_to_project).pack(fill=tk.X, pady=2)
+        ttk.Button(frame, text="💾 Save to Project",
+                   command=self._save_and_prompt).pack(fill=tk.X, pady=2)
+
+    def _save_and_prompt(self):
+        """Save settings to project state and prompt to save file."""
+        self._save_to_project()
+        # Trigger the main app's save functionality
+        if hasattr(self.main_app, 'save_project'):
+            self.main_app.save_project()
 
     def _build_info_section(self):
         """Build data info display section."""
@@ -330,6 +334,9 @@ class PhotometryTab(ttk.Frame):
 
     def _load_data(self):
         """Load photometer data from file."""
+        print(
+            f"DEBUG _load_data: BEFORE - time_start={self.time_start_var.get()}, time_stop={self.time_stop_var.get()}")
+        """Load photometer data from file."""
         filepath = self.file_path_var.get()
         if not filepath or not os.path.exists(filepath):
             messagebox.showerror("Error", "Please select a valid photometer file")
@@ -340,7 +347,9 @@ class PhotometryTab(ttk.Frame):
 
             if success:
                 self._update_info()
-                self._auto_set_time_range()
+                # Only auto-set time range if not already set (e.g., from project load)
+                # if not self.time_start_var.get() or not self.time_stop_var.get():
+                #     self._auto_set_time_range()
                 self._update_plot()
                 self.main_app.status_var.set(f"Loaded photometer: {os.path.basename(filepath)}")
             else:
@@ -348,24 +357,6 @@ class PhotometryTab(ttk.Frame):
 
         except Exception as e:
             messagebox.showerror("Error", f"Error loading photometer data:\n{e}")
-
-    def _sync_from_home(self):
-        """Sync timing from Home tab."""
-        try:
-            # Get T0 from home tab
-            if hasattr(self.main_app, 'home_tab'):
-                home_T0 = self.main_app.home_tab.T0_var.get()
-                self.T0_var.set(home_T0)
-
-                # Try to get event time if available
-                if hasattr(self.main_app.home_tab, 'event_time_var'):
-                    event_time = self.main_app.home_tab.event_time_var.get()
-                    if event_time and event_time != "HH:MM:SS":
-                        self.event_time_var.set(event_time)
-
-            self.main_app.status_var.set("Synced timing from Home tab")
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to sync from Home:\n{e}")
 
     def _apply_offset(self):
         """Apply second offset to photometer data."""
@@ -377,17 +368,6 @@ class PhotometryTab(ttk.Frame):
             self.main_app.status_var.set(f"Applied second offset: {offset}")
         except ValueError:
             messagebox.showerror("Error", "Second offset must be an integer")
-
-    def _auto_set_time_range(self):
-        """Auto-set time range from loaded data."""
-        if not self.photometer.is_loaded:
-            return
-
-        t_min, t_max = self.photometer.get_time_range()
-        if t_min is not None:
-            # Set a reasonable default range (first 100ms)
-            self.time_start_var.set(f"{t_min:.0f}")
-            self.time_stop_var.set(f"{min(t_max, t_min + 100000):.0f}")
 
     def _get_time_range(self):
         """Get current time range settings."""
@@ -488,10 +468,19 @@ class PhotometryTab(ttk.Frame):
         # Use raw or calibrated data
         use_raw = self.show_raw_var.get()
 
+      # For raw data, we need to get the same time-masked indices
+        if use_raw:
+            # Get the mask for the time range (matching what get_data_in_event_time does)
+            offset_us = self.photometer.second_offset * 1e6
+            phot_t_start = t_start + offset_us
+            phot_t_stop = t_stop + offset_us
+            mask = (self.photometer.native_time_array >= phot_t_start) & \
+                   (self.photometer.native_time_array <= phot_t_stop)
+
         # Plot channels
         if self.show_337_var.get() and data['ch0'] is not None:
             if use_raw:
-                y_data = self.photometer.raw_channels[0][::downsample][:len(data['time'])]
+                y_data = self.photometer.raw_channels[0][mask][::downsample]
             else:
                 y_data = data['ch0']
             self.ax.plot(data['time'], y_data, color='blue', linewidth=0.5,
@@ -499,7 +488,7 @@ class PhotometryTab(ttk.Frame):
 
         if self.show_391_var.get() and data['ch1'] is not None:
             if use_raw:
-                y_data = self.photometer.raw_channels[1][::downsample][:len(data['time'])]
+                y_data = self.photometer.raw_channels[1][mask][::downsample]
             else:
                 y_data = data['ch1']
             self.ax.plot(data['time'], y_data, color='purple', linewidth=0.5,
@@ -507,7 +496,7 @@ class PhotometryTab(ttk.Frame):
 
         if self.show_777_var.get() and data['ch2'] is not None:
             if use_raw:
-                y_data = self.photometer.raw_channels[2][::downsample][:len(data['time'])]
+                y_data = self.photometer.raw_channels[2][mask][::downsample]
             else:
                 y_data = data['ch2']
             self.ax.plot(data['time'], y_data, color='red', linewidth=0.5,
@@ -555,36 +544,41 @@ class PhotometryTab(ttk.Frame):
         """Plot channel ratios on secondary axis."""
         time = data['time']
 
-        # Calculate point-by-point ratios (with smoothing)
-        window = max(1, len(time) // 100)  # Smooth over ~1% of data
-
+        # Calculate point-by-point ratios
         if data['ch0'] is not None and data['ch2'] is not None:
             with np.errstate(divide='ignore', invalid='ignore'):
-                ratio_337_777 = data['ch0'] / np.maximum(data['ch2'], 1e-10)
-                ratio_337_777 = np.clip(ratio_337_777, 0, 10)
-            ax.plot(time, ratio_337_777, color='cyan', linewidth=0.5,
-                    label='337/777', alpha=0.7)
+                ratio_337_777 = data['ch0'] / data['ch2']
+                # Replace inf/nan with nan for log scale compatibility
+                ratio_337_777 = np.where(np.isfinite(ratio_337_777), ratio_337_777, np.nan)
+            ax.plot(time, ratio_337_777, color='blue', linewidth=0.5,
+                    label='337/777', alpha=0.8)
 
         if data['ch1'] is not None and data['ch2'] is not None:
             with np.errstate(divide='ignore', invalid='ignore'):
-                ratio_391_777 = data['ch1'] / np.maximum(data['ch2'], 1e-10)
-                ratio_391_777 = np.clip(ratio_391_777, 0, 10)
-            ax.plot(time, ratio_391_777, color='magenta', linewidth=0.5,
-                    label='391/777', alpha=0.7)
+                ratio_391_777 = data['ch1'] / data['ch2']
+                ratio_391_777 = np.where(np.isfinite(ratio_391_777), ratio_391_777, np.nan)
+            ax.plot(time, ratio_391_777, color='purple', linewidth=0.5,
+                    label='391/777', alpha=0.8)
 
         if data['ch0'] is not None and data['ch1'] is not None:
             with np.errstate(divide='ignore', invalid='ignore'):
-                ratio_337_391 = data['ch0'] / np.maximum(data['ch1'], 1e-10)
-                ratio_337_391 = np.clip(ratio_337_391, 0, 10)
+                ratio_337_391 = data['ch0'] / data['ch1']
+                ratio_337_391 = np.where(np.isfinite(ratio_337_391), ratio_337_391, np.nan)
             ax.plot(time, ratio_337_391, color='orange', linewidth=0.5,
-                    label='337/391', alpha=0.7)
+                    label='337/391', alpha=0.8)
+
+        # Use log scale like the 2023 script
+        ax.set_yscale('log')
+
+        # Bold reference line at y=1
+        ax.axhline(y=1, color='black', linestyle='-', linewidth=2.5, zorder=3)
 
         ax.set_xlabel(xlabel, fontsize=11)
-        ax.set_ylabel("Ratio", fontsize=11)
+        ax.set_ylabel("Irradiance Ratios", fontsize=11)
         ax.set_title("Channel Ratios", fontsize=12)
         ax.legend(loc='upper right', fontsize=9)
         ax.grid(True, linestyle=':', alpha=0.5)
-        ax.set_ylim(0, 5)  # Reasonable ratio range
+        # Remove fixed y-limits to allow auto-scaling with log
 
     def _on_mouse_move(self, event):
         """Handle mouse movement for coordinate display."""
@@ -657,17 +651,12 @@ class PhotometryTab(ttk.Frame):
         except:
             pass
 
-        # Save time range
-        if self.time_start_var.get():
-            try:
-                state.photometer['time_start'] = float(self.time_start_var.get())
-            except:
-                pass
-        if self.time_stop_var.get():
-            try:
-                state.photometer['time_stop'] = float(self.time_stop_var.get())
-            except:
-                pass
+        # Save time range (always save to allow clearing)
+        time_start_str = self.time_start_var.get()
+        time_stop_str = self.time_stop_var.get()
+
+        state.photometer['time_start'] = float(time_start_str) if time_start_str else None
+        state.photometer['time_stop'] = float(time_stop_str) if time_stop_str else None
 
         # Save display options
         state.photometer['show_337'] = self.show_337_var.get()
@@ -694,14 +683,16 @@ class PhotometryTab(ttk.Frame):
         if state.photometer.get('second_offset') is not None:
             self.second_offset_var.set(str(state.photometer['second_offset']))
 
-        # Load T0 from timing section
-        self.T0_var.set(str(state.timing.get('T0', 0)))
-
         # Load time range
         if state.photometer.get('time_start') is not None:
             self.time_start_var.set(str(state.photometer['time_start']))
+        else:
+            self.time_start_var.set("")
+
         if state.photometer.get('time_stop') is not None:
             self.time_stop_var.set(str(state.photometer['time_stop']))
+        else:
+            self.time_stop_var.set("")
 
         # Load display options
         if 'show_337' in state.photometer:
