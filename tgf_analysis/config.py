@@ -1,8 +1,3 @@
-"""
-TGF Analysis Tool - Configuration and Constants
-================================================
-Contains known spectral lines, colormaps, and global configuration.
-"""
 
 import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
