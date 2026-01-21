@@ -1,8 +1,3 @@
-"""
-TGF Analysis Tool - Timeshift Calculation
-=========================================
-Calculates timing offsets between TASD and other instruments.
-"""
 
 import numpy as np
 import heapq
