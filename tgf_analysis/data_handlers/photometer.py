@@ -1,9 +1,3 @@
-"""
-TGF Analysis Tool - Photometer Data Handler
-===========================================
-Handles loading, calibration, and processing of photometer data.
-"""
-
 import os
 import numpy as np
 from typing import Optional, Tuple, Dict
