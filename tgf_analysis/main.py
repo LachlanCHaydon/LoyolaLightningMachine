@@ -1,3 +1,9 @@
+"""
+TGF Lightning Analysis Tool - Main Application
+=============================================
+Entry point and main window for the TGF analysis tool.
+"""
+
 import sys
 import os
 import tkinter as tk
@@ -16,6 +22,9 @@ from gui.tabs.home_plotter import HomePlotterTab
 from gui.tabs.intf_tab import INTFTab
 from gui.tabs.photometry_tab import PhotometryTab
 from gui.tabs.spectroscopy_tab import SpectroscopyTab
+from gui.tabs.map_visualizer_tab import MapVisualizerTab
+
+
 
 
 class StartupDialog(tk.Toplevel):
@@ -100,13 +109,6 @@ class StartupDialog(tk.Toplevel):
             btn_frame,
             text="✨ Create New Project",
             command=self._new_project,
-            width=30
-        ).pack(pady=5)
-
-        ttk.Button(
-            btn_frame,
-            text="🔍 Find Event with NLDN",
-            command=self._find_event,
             width=30
         ).pack(pady=5)
 
@@ -275,6 +277,10 @@ class MainApplication(tk.Tk):
         status_bar = ttk.Label(self, textvariable=self.status_var, relief=tk.SUNKEN, anchor='w')
         status_bar.pack(fill=tk.X, side=tk.BOTTOM)
 
+        #Map Visualizer (NLDN)
+        self.map_tab = MapVisualizerTab(self.notebook, self)
+        self.notebook.add(self.map_tab, text="Map Visualizer (NLDN)")
+
     def _build_placeholder(self, parent, title, description):
         """Build a placeholder for tabs not yet implemented."""
         frame = ttk.Frame(parent, padding=20)
@@ -369,7 +375,10 @@ class MainApplication(tk.Tk):
                 print(f"Warning: Failed to load spectroscopy_tab: {e}")
                 import traceback
                 traceback.print_exc()
-
+            try:
+                self.map_tab.load_from_project()
+            except Exception as e:
+                print(f"Warning: Failed to load map_tab: {e}")
         else:
             messagebox.showerror("Error", f"Failed to load project:\n{filepath}")
 
@@ -386,7 +395,8 @@ class MainApplication(tk.Tk):
                     self.photometry_tab._save_to_project()
                 if hasattr(self, 'spectroscopy_tab'):
                     self.spectroscopy_tab._save_to_project()
-
+                if hasattr(self, 'map_tab'):
+                    self.map_tab._save_to_project()
 
                 save_project(self.project_state, self.project_filepath)
                 self.unsaved_changes = False
@@ -417,6 +427,8 @@ class MainApplication(tk.Tk):
                     self.photometry_tab._save_to_project()
                 if hasattr(self, 'spectroscopy_tab'):
                     self.spectroscopy_tab._save_to_project()
+                if hasattr(self, 'map_tab'):
+                    self.map_tab._save_to_project()
 
                 self.project_state.project_name = os.path.splitext(os.path.basename(filepath))[0]
                 save_project(self.project_state, filepath)

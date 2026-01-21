@@ -1,3 +1,9 @@
+"""
+TGF Analysis Tool - LMA (Lightning Mapping Array) Data Handler
+=============================================================
+Handles loading and processing of LMA source location data.
+"""
+
 import os
 import numpy as np
 from typing import Optional, Tuple, Dict, List

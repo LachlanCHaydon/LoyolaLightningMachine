@@ -1,3 +1,9 @@
+"""
+TGF Analysis Tool - Interferometer Data Handler
+===============================================
+Handles loading and processing of INTF (Interferometer) VHF source location data.
+"""
+
 import os
 import numpy as np
 from typing import Optional, Tuple, Dict, List

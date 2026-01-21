@@ -1,3 +1,9 @@
+"""
+TGF Analysis Tool - Spectroscopy Analysis
+=========================================
+Static methods for spectroscopic analysis of lightning emissions.
+"""
+
 import numpy as np
 from typing import Optional, Tuple, List, Dict
 from scipy import ndimage

@@ -1,3 +1,8 @@
+"""
+TGF Analysis Tool - Fast Antenna Data Handler
+=============================================
+Handles loading and processing of Fast Antenna (FA) electric field data.
+"""
 
 import os
 import numpy as np

@@ -125,6 +125,7 @@ class ProjectState:
             'source_location': None,
             'spectroscopy_ratios': [],
         }
+        self.map_visualizer = {}
 
     def to_dict(self):
         """Convert state to dictionary for JSON serialization."""

@@ -1,3 +1,8 @@
+"""
+TGF Analysis Tool - Frame Data Container
+========================================
+Container class for spectroscopy image frame data.
+"""
 
 import numpy as np
 from PIL import Image

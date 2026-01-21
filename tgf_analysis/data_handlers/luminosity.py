@@ -1,3 +1,9 @@
+"""
+TGF Analysis Tool - Luminosity Data Handler
+==========================================
+Handles loading and processing of high-speed camera luminosity data.
+"""
+
 import os
 import numpy as np
 from typing import Optional, Tuple, Dict, List
