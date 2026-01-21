@@ -1,9 +1,3 @@
-"""
-TGF Lightning Analysis Tool - Main Application
-=============================================
-Entry point and main window for the TGF analysis tool.
-"""
-
 import sys
 import os
 import tkinter as tk
