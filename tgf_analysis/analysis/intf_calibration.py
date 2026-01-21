@@ -1,8 +1,3 @@
-"""
-TGF Analysis Tool - INTF Calibration
-====================================
-Handles cosine-shift calibration for raw INTF data.
-"""
 
 import numpy as np
 from typing import Optional, Tuple
