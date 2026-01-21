@@ -1,9 +1,5 @@
 """
-TGF Lightning Analysis Tool
-===========================
 
-A comprehensive tool for analyzing Terrestrial Gamma-ray Flash (TGF) 
-observations from the Telescope Array Surface Detector.
 
 Modules:
 --------
@@ -21,13 +17,12 @@ Usage:
 Or from command line:
     python -m tgf_analysis
 
-Version: 2.0.0
 """
 
 from config import APP_NAME, APP_VERSION
 
 __version__ = APP_VERSION
-__author__ = "TGF Research Group"
+__author__ = "Lachlan Haydon and the TA Collaboration"
 
 # Convenience imports
 from data_handlers import (
