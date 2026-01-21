@@ -1,9 +1,3 @@
-"""
-TGF Analysis Tool - TASD (Surface Detector) Data Handler
-========================================================
-Handles loading and processing of Telescope Array Surface Detector data.
-"""
-
 import os
 import numpy as np
 from typing import Optional, Tuple, Dict, List
