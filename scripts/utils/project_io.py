@@ -119,13 +119,77 @@ class ProjectState:
             'poly_order': 4,
         }
 
+        # Timeshift settings
+        self.timeshift = {
+            'mode': 'intf_lma',
+            'mean_dt': None,
+            'std_dt': None,
+            'n_detectors': None,
+            'converged': None,
+            'iterations': None,
+            'initial_altitude': 3.0,
+            'lma_range': 1000,
+            'lma_chi_limit': 2.0,
+            'intf_range': 9.4,
+            'intf_elev_min': 1.0,
+            'intf_elev_max': 11.0,
+            'intf_azi_min': 240.0,
+            'intf_azi_max': 302.0,
+            'sd_timing_error': 0.04,
+            'iteration_limit': 10,
+            'cross_second_offset_us': 0,
+        }
+
         # Analysis results
         self.results = {
             'timeshift_analysis': None,
             'source_location': None,
             'spectroscopy_ratios': [],
         }
+        # Luminosity calculation settings
+        self.luminosity_settings = {
+            'source_directory': None,
+            'start_time': 0.0,
+            'frame_interval': 25.0,
+            'exposure': 2.41,
+            'roi': {'x': 800, 'y': 280, 'width': 100, 'height': 140},
+            'bg_start': 0,
+            'bg_count': 10,
+            'output_file': None,
+            'preview_frame': '100',
+        }
+
         self.map_visualizer = {}
+
+        # Publication figure tabs
+        self.flash_overview = {
+            'time_min': None,
+            'time_max': None,
+            'event_time': None,
+            'v711_directory': None,
+            'camera_frames': [],
+        }
+
+        self.figure2 = {
+            'time_min': None,
+            'time_max': None,
+            'intf_elv_min': None,
+            'intf_elv_max': None,
+            'intf_azi_min': None,
+            'intf_azi_max': None,
+            'vem_threshold': 0,
+            'max_detectors': 20,
+            'stroke_labels': [],
+            'camera_frames': [],
+        }
+
+        self.figure3 = {
+            'strokes': [],
+            'fa_y_min': None,
+            'fa_y_max': None,
+            'intf_elv_min': None,
+            'intf_elv_max': None,
+        }
 
     def to_dict(self):
         """Convert state to dictionary for JSON serialization."""
@@ -144,7 +208,12 @@ class ProjectState:
             'visibility': self.visibility,
             'plot_style': self.plot_style,
             'spectroscopy': self.spectroscopy,
+            'luminosity_settings': self.luminosity_settings,
+            'timeshift': self.timeshift,
             'results': self.results,
+            'flash_overview': self.flash_overview,
+            'figure2': self.figure2,
+            'figure3': self.figure3,
         }
 
     def from_dict(self, data):
@@ -187,8 +256,23 @@ class ProjectState:
         if 'spectroscopy' in data:
             self.spectroscopy.update(data['spectroscopy'])
 
+        if 'luminosity_settings' in data:
+            self.luminosity_settings.update(data['luminosity_settings'])
+
+        if 'timeshift' in data:
+            self.timeshift.update(data['timeshift'])
+
         if 'results' in data:
             self.results.update(data['results'])
+
+        if 'flash_overview' in data:
+            self.flash_overview.update(data['flash_overview'])
+
+        if 'figure2' in data:
+            self.figure2.update(data['figure2'])
+
+        if 'figure3' in data:
+            self.figure3.update(data['figure3'])
 
 
 def save_project(state, filepath):

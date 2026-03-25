@@ -8,10 +8,10 @@ from gui.tabs.home_plotter import HomePlotterTab
 from gui.tabs.intf_tab import INTFTab
 from gui.tabs.photometry_tab import PhotometryTab
 from gui.tabs.spectroscopy_tab import SpectroscopyTab
+from gui.tabs.timeshift_tab import TimeshiftTab
+from gui.tabs.luminosity_tab import LuminosityTab
+from gui.tabs.figures import FlashOverviewTab, Figure2Tab, Figure3Tab
 
-# Future tabs:
-# from timeshift_tab import TimeshiftTab
-# from .luminosity_tab import LuminosityTab
-# from .photometry_tab import PhotometryTab
-
-__all__ = ['HomePlotterTab']
+__all__ = ['HomePlotterTab', 'INTFTab', 'PhotometryTab', 'SpectroscopyTab',
+           'TimeshiftTab', 'LuminosityTab',
+           'FlashOverviewTab', 'Figure2Tab', 'Figure3Tab']

@@ -22,7 +22,10 @@ from gui.tabs.home_plotter import HomePlotterTab
 from gui.tabs.intf_tab import INTFTab
 from gui.tabs.photometry_tab import PhotometryTab
 from gui.tabs.spectroscopy_tab import SpectroscopyTab
+from gui.tabs.timeshift_tab import TimeshiftTab
+from gui.tabs.luminosity_tab import LuminosityTab
 from gui.tabs.map_visualizer_tab import MapVisualizerTab
+from gui.tabs.figures import FlashOverviewTab, Figure2Tab, Figure3Tab
 
 
 
@@ -116,7 +119,6 @@ class StartupDialog(tk.Toplevel):
         recent = get_recent_projects(5)
         if recent:
             ttk.Separator(content_frame, orient='horizontal').pack(fill=tk.X, pady=10)
-
             ttk.Label(
                 content_frame,
                 text="Recent Projects:",
@@ -253,16 +255,12 @@ class MainApplication(tk.Tk):
         self.notebook.add(self.intf_tab, text="INTF")
 
         # Timeshift tab
-        self.timeshift_frame = ttk.Frame(self.notebook)
-        self.notebook.add(self.timeshift_frame, text="Timeshift")
-        self._build_placeholder(self.timeshift_frame, "Timeshift Calculator",
-                               "Calculate timing offsets using INTF, SD, and LMA data")
+        self.timeshift_tab = TimeshiftTab(self.notebook, self)
+        self.notebook.add(self.timeshift_tab, text="Timeshift")
 
         # Luminosity tab
-        self.luminosity_frame = ttk.Frame(self.notebook)
-        self.notebook.add(self.luminosity_frame, text="Luminosity")
-        self._build_placeholder(self.luminosity_frame, "Luminosity & LMA",
-                               "Luminosity calculation from high-speed camera and LMA data processing")
+        self.luminosity_tab = LuminosityTab(self.notebook, self)
+        self.notebook.add(self.luminosity_tab, text="Luminosity")
 
         # Spectroscopy tab
         self.spectroscopy_tab = SpectroscopyTab(self.notebook, self)
@@ -280,6 +278,16 @@ class MainApplication(tk.Tk):
         #Map Visualizer (NLDN)
         self.map_tab = MapVisualizerTab(self.notebook, self)
         self.notebook.add(self.map_tab, text="Map Visualizer (NLDN)")
+
+        # Publication figure tabs
+        self.flash_overview_tab = FlashOverviewTab(self.notebook, self)
+        self.notebook.add(self.flash_overview_tab, text="Flash Overview")
+
+        self.figure2_tab = Figure2Tab(self.notebook, self)
+        self.notebook.add(self.figure2_tab, text="Figure 2")
+
+        self.figure3_tab = Figure3Tab(self.notebook, self)
+        self.notebook.add(self.figure3_tab, text="Figure 3")
 
     def _build_placeholder(self, parent, title, description):
         """Build a placeholder for tabs not yet implemented."""
@@ -370,6 +378,16 @@ class MainApplication(tk.Tk):
                 print(f"Warning: Failed to load photometry_tab: {e}")
 
             try:
+                self.timeshift_tab.load_from_project()
+            except Exception as e:
+                print(f"Warning: Failed to load timeshift_tab: {e}")
+
+            try:
+                self.luminosity_tab.load_from_project()
+            except Exception as e:
+                print(f"Warning: Failed to load luminosity_tab: {e}")
+
+            try:
                 self.spectroscopy_tab.load_from_project()
             except Exception as e:
                 print(f"Warning: Failed to load spectroscopy_tab: {e}")
@@ -379,6 +397,21 @@ class MainApplication(tk.Tk):
                 self.map_tab.load_from_project()
             except Exception as e:
                 print(f"Warning: Failed to load map_tab: {e}")
+
+            try:
+                self.flash_overview_tab.load_from_project()
+            except Exception as e:
+                print(f"Warning: Failed to load flash_overview_tab: {e}")
+
+            try:
+                self.figure2_tab.load_from_project()
+            except Exception as e:
+                print(f"Warning: Failed to load figure2_tab: {e}")
+
+            try:
+                self.figure3_tab.load_from_project()
+            except Exception as e:
+                print(f"Warning: Failed to load figure3_tab: {e}")
         else:
             messagebox.showerror("Error", f"Failed to load project:\n{filepath}")
 
@@ -393,10 +426,20 @@ class MainApplication(tk.Tk):
                     self.intf_tab._save_to_project()
                 if hasattr(self, 'photometry_tab'):
                     self.photometry_tab._save_to_project()
+                if hasattr(self, 'timeshift_tab'):
+                    self.timeshift_tab._save_to_project()
+                if hasattr(self, 'luminosity_tab'):
+                    self.luminosity_tab._save_to_project()
                 if hasattr(self, 'spectroscopy_tab'):
                     self.spectroscopy_tab._save_to_project()
                 if hasattr(self, 'map_tab'):
                     self.map_tab._save_to_project()
+                if hasattr(self, 'flash_overview_tab'):
+                    self.flash_overview_tab._save_to_project()
+                if hasattr(self, 'figure2_tab'):
+                    self.figure2_tab._save_to_project()
+                if hasattr(self, 'figure3_tab'):
+                    self.figure3_tab._save_to_project()
 
                 save_project(self.project_state, self.project_filepath)
                 self.unsaved_changes = False
@@ -425,10 +468,20 @@ class MainApplication(tk.Tk):
                     self.intf_tab._save_to_project()
                 if hasattr(self, 'photometry_tab'):
                     self.photometry_tab._save_to_project()
+                if hasattr(self, 'timeshift_tab'):
+                    self.timeshift_tab._save_to_project()
+                if hasattr(self, 'luminosity_tab'):
+                    self.luminosity_tab._save_to_project()
                 if hasattr(self, 'spectroscopy_tab'):
                     self.spectroscopy_tab._save_to_project()
                 if hasattr(self, 'map_tab'):
                     self.map_tab._save_to_project()
+                if hasattr(self, 'flash_overview_tab'):
+                    self.flash_overview_tab._save_to_project()
+                if hasattr(self, 'figure2_tab'):
+                    self.figure2_tab._save_to_project()
+                if hasattr(self, 'figure3_tab'):
+                    self.figure3_tab._save_to_project()
 
                 self.project_state.project_name = os.path.splitext(os.path.basename(filepath))[0]
                 save_project(self.project_state, filepath)
@@ -459,8 +512,7 @@ class MainApplication(tk.Tk):
             "A tool for analyzing Terrestrial Gamma-ray Flash\n"
             "observations from the Telescope Array Surface Detector.\n\n"
             "Developed by Lachlan Haydon, 2026. "
-            "Built with code developed by Davide Muzzucco, Ny Kieu, "
-            "Rasha Abbasi, and the Telescope Array Project "
+
         )
 
     def _update_title(self):
@@ -476,7 +528,7 @@ class MainApplication(tk.Tk):
                 "Unsaved Changes",
                 "You have unsaved changes. Save before closing?"
             )
-            if result is True:  # Yes
+            if result is True:  # YesTh
                 self._save_project()
                 if not self.unsaved_changes:  # Save succeeded
                     self.destroy()

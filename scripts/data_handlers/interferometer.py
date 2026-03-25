@@ -351,6 +351,99 @@ class InterferometerHandler:
             f"Azimuth: {np.min(self.azimuth):.1f}° - {np.max(self.azimuth):.1f}°"
         )
 
+    def get_stratified_scatter(self, elv_min: float = None, elv_max: float = None,
+                               azi_min: float = None, azi_max: float = None,
+                               t_min: float = None, t_max: float = None) -> List[Dict]:
+        """
+        Return INTF scatter data stratified into 3 s-ratio tiers for publication plots.
+
+        S-ratio tiers (drawn in order: tier 0 first/under, tier 2 last/on top):
+            tier 0: s <= 3.0   (alpha 0.3, lowest confidence)
+            tier 1: 3.0 < s <= 7.0  (alpha 0.7)
+            tier 2: s > 7.0   (alpha 1.0, highest confidence)
+
+        Each tier dict contains:
+            time, elevation, azimuth : np.ndarray
+            colors : np.ndarray (RGBA from cmap_mjet)
+            marker_sizes : np.ndarray  — (1 + 3*ss_norm²)²
+            alpha : float
+
+        Parameters match filter_data() for optional spatial/time filtering.
+        """
+        if not self.is_loaded:
+            return []
+
+        # Build filter mask (same logic as filter_data)
+        mask = np.ones(len(self.time_array), dtype=bool)
+        if elv_min is not None:
+            mask &= (self.elevation >= elv_min)
+        if elv_max is not None:
+            mask &= (self.elevation <= elv_max)
+        if azi_min is not None:
+            mask &= (self.azimuth >= azi_min)
+        if azi_max is not None:
+            mask &= (self.azimuth <= azi_max)
+        if t_min is not None:
+            mask &= (self.time_array >= t_min)
+        if t_max is not None:
+            mask &= (self.time_array <= t_max)
+
+        time_f = self.time_array[mask]
+        elv_f = self.elevation[mask]
+        azi_f = self.azimuth[mask]
+        pk2pk_f = self.pk2pk[mask]
+
+        if len(pk2pk_f) == 0:
+            return [{'time': np.array([]), 'elevation': np.array([]),
+                     'azimuth': np.array([]), 'colors': np.empty((0, 4)),
+                     'marker_sizes': np.array([]), 'alpha': a}
+                    for a in (0.3, 0.7, 1.0)]
+
+        # Normalize pk2pk on log scale
+        ss = np.log10(np.clip(pk2pk_f, 1e-10, None))
+        a_min = np.min(ss)
+        a_max = np.max(ss)
+        if a_max > a_min:
+            ss_norm = (ss - a_min) / (a_max - a_min)
+        else:
+            ss_norm = np.zeros_like(ss)
+        ss_norm = np.clip(ss_norm, 0, 1)
+
+        # Marker sizes: (1 + 3*ss_norm²)²
+        marker_sizes = (1 + 3 * ss_norm**2)**2
+
+        # Colors from cmap_mjet
+        max_val = np.max(ss_norm) if np.max(ss_norm) > 0 else 1.0
+        colors = cmap_mjet(ss_norm / max_val)
+
+        # S-ratio for tier assignment: same formula as marker sizes
+        s_ratio = marker_sizes  # (1 + 3*ss_norm²)²
+
+        # Tier boundaries
+        sLevelsTup = [1.0, 3.0, 7.0, 16.0]
+        alphaTup = [0.3, 0.7, 1.0]
+
+        tiers = []
+        for i in range(3):
+            s_lo = sLevelsTup[i]
+            s_hi = sLevelsTup[i + 1]
+            if i < 2:
+                tier_mask = (s_ratio >= s_lo) & (s_ratio < s_hi)
+            else:
+                # Top tier includes everything above s_hi boundary
+                tier_mask = (s_ratio >= s_lo)
+
+            tiers.append({
+                'time': time_f[tier_mask],
+                'elevation': elv_f[tier_mask],
+                'azimuth': azi_f[tier_mask],
+                'colors': colors[tier_mask],
+                'marker_sizes': marker_sizes[tier_mask],
+                'alpha': alphaTup[i],
+            })
+
+        return tiers
+
     def run_lma_calibration(self, lma_filepath: str, intf_t0_sod: float,
                             match_window_us: float = 50.0,
                             chi2_max: float = 2.0,
@@ -444,7 +537,16 @@ class InterferometerHandler:
                 matched_lma_idx.append(i_lma)
 
             if len(shift_a_list) == 0:
-                return None
+                # Return diagnostic info even on failure
+                return {
+                    'error': 'no_matches',
+                    'intf_sod_min': float(intf_sod.min()),
+                    'intf_sod_max': float(intf_sod.max()),
+                    'lma_sod_min': float(lma['sod'].min()),
+                    'lma_sod_max': float(lma['sod'].max()),
+                    'n_intf': len(intf_sod),
+                    'n_lma_filtered': len(lma['sod']),
+                }
 
             shift_a = np.array(shift_a_list)
             shift_b = np.array(shift_b_list)
@@ -510,6 +612,13 @@ class InterferometerHandler:
                 'n_final':          n_final,
                 'formal_error_deg': formal_err,
                 'pairs':            pairs,
+                'intf_t0_sod':      intf_t0_sod,
+                'intf_sod_min':     float(intf_sod.min()),
+                'intf_sod_max':     float(intf_sod.max()),
+                'lma_sod_min':      float(lma['sod'].min()),
+                'lma_sod_max':      float(lma['sod'].max()),
+                'n_intf':           len(intf_sod),
+                'n_lma_filtered':   len(lma['sod']),
             }
 
         except Exception as e:

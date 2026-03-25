@@ -48,6 +48,9 @@ INTF_LON = -112.700696
 # Earth radius for calculations
 R_EARTH = 6371  # km
 
+# TASD detector coordinate file (shared across all tabs)
+TASD_COORDS_FILENAME = 'tasd_gpscoors.txt'
+
 # =============================================================================
 # Default INTF Cosine Shifts (2024 calibration values)
 # =============================================================================
@@ -93,7 +96,7 @@ PHOTOMETER_CALIBRATION = {
     }
 }
 
-# Default photometer sample rate
+# Default photometer sample rate (PXI-5105 at 30 MS/s per Abbasi et al. 2025)
 PHOTOMETER_SAMPLE_RATE = 20e6  # 20 MHz
 PHOTOMETER_RECORD_LENGTH = int(20e6)  # 20M samples = 1 second
 

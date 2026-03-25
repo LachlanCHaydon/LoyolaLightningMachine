@@ -61,7 +61,12 @@ class PhotometerHandler:
         
         # Data loaded flag
         self.is_loaded = False
-        
+
+    @property
+    def sample_rate_mhz(self) -> float:
+        """Sample rate in MHz for display."""
+        return self.sample_rate / 1e6
+
     def _calculate_cal_factors(self) -> Dict[int, float]:
         """Calculate calibration factors for each channel."""
         factors = {}

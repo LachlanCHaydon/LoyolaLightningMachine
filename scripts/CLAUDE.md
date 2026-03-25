@@ -158,3 +158,39 @@ state.map_visualizer  # (dict, currently not persisted — known bug)
 - Timeshift and Luminosity tabs are placeholder stubs
 - 2025 INTF calibration values (cosShiftA/cosShiftB) from Utah still pending
 - Debug print statements remain in `project_io.py` `save_project()` function
+
+
+## Publication Figure Tabs (v2 Addition)
+
+Three new figure tabs produce paper-ready plots. All share data already
+loaded in the project (FA, INTF, photometer, TASD, LMA). Tabs live in
+`gui/tabs/figures/` as:
+  - `flash_overview_tab.py`   (Flash Overview)
+  - `figure2_tab.py`          (Figure 2 — Multi-instrument overview with v711 frames)
+  - `figure3_tab.py`          (Figure 3 — Per-stroke grid with dart leader velocity)
+
+### Handler Changes Required
+- `data_handlers/photometer.py`: expose `sample_rate` (20 or 30 MHz) as a
+  user-settable parameter at load time; add it to ProjectState.photometer dict.
+  The 2023 event used 30 MHz; do not hardcode 20 MHz.
+- `data_handlers/interferometer.py`: add `get_stratified_scatter()` method that
+  returns the three s-ratio tiers (sLevelsTup = [1.0, 3.0, 7.0, 16.0],
+  alphaTup = [0.3, 0.7, 1.0]) as a list of dicts, each with keys: time, elv,
+  azi, colors, marker_sizes, alpha. This is used by all figure tabs for INTF
+  scatter. Do not break existing `filter_data()` or `get_full_data()`.
+
+### INTF Scatter Convention
+All INTF scatter plots use the s-ratio stratified scatter (3 calls, lowest-s 
+drawn first/under). Colors from cmap_mjet, marker sizes from (1+3*ss²)². 
+This is the scientific standard for this data type.
+
+### Frame Panel Convention (v711 frames)
+Camera frame panels below main plots: images loaded from a user-specified
+directory, displayed via OffsetImage + AnnotationBbox, connected to the time
+axis via ConnectionPatch dashed lines. Users provide image paths + timestamps.
+
+### Velocity Calculation (Figure 3)
+Dart leader velocity = linear regression of INTF elevation vs time in a 
+user-specified window. Convert elevation to altitude via z = x1 * tan(elv),
+where x1 = horizontal distance camera to source (km, from LMA or user input).
+Velocity = dz/dt. Report in km/s. Use scipy.stats.linregress.
