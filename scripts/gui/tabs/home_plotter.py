@@ -94,7 +94,7 @@ class HomePlotterTab(ttk.Frame):
         # Plot Style and Settings
         self.intf_calibrated_var = tk.BooleanVar(value=True)
         self.show_grid_var = tk.BooleanVar(value=True)
-        self.show_legend_var = tk.BooleanVar(value=True)
+        self.legend_loc_var = tk.StringVar(value="upper right")
         self.plot_title_var = tk.StringVar(value="")
 
         # Time Marker Variables (Fixed: Moved before _build_ui)
@@ -393,8 +393,13 @@ class HomePlotterTab(ttk.Frame):
 
         ttk.Checkbutton(frame, text="Show Grid",
                        variable=self.show_grid_var).pack(anchor='w')
-        ttk.Checkbutton(frame, text="Show Legend",
-                       variable=self.show_legend_var).pack(anchor='w')
+        legend_row = ttk.Frame(frame)
+        legend_row.pack(fill=tk.X, pady=2)
+        ttk.Label(legend_row, text="Legend:").pack(side=tk.LEFT)
+        ttk.Combobox(legend_row, textvariable=self.legend_loc_var,
+                     values=["Off", "upper right", "upper left",
+                             "lower right", "lower left", "best"],
+                     width=14, state='readonly').pack(side=tk.LEFT, padx=2)
 
         row = ttk.Frame(frame)
         row.pack(fill=tk.X, pady=2)
@@ -786,10 +791,7 @@ class HomePlotterTab(ttk.Frame):
                        self.show_phot_777_var.get())
 
             if any_phot and self.photometer_handler.is_loaded:
-                # Downsample for performance
-                duration = t_max - t_min
-                downsample = max(1, int(duration / 10000))
-
+                downsample = 1
                 data = self.photometer_handler.get_data_in_event_time(t_min, t_max, downsample)
                 if data and data['time'] is not None and len(data['time']) > 0:
                     ax_phot = ax.twinx()
@@ -866,9 +868,10 @@ class HomePlotterTab(ttk.Frame):
             self.ax_main.set_title(title, fontsize=14)
 
         # Legend
-        if self.show_legend_var.get() and legend_handles:
+        legend_loc = self.legend_loc_var.get()
+        if legend_loc != "Off" and legend_handles:
             self.ax_main.legend(legend_handles, legend_labels,
-                               loc='upper right', fontsize=9)
+                               loc=legend_loc, fontsize=9)
 
         # Adjust layout
         self.fig.tight_layout()
@@ -891,7 +894,8 @@ class HomePlotterTab(ttk.Frame):
         )
         if filepath:
             try:
-                self.fig.savefig(filepath, dpi=300, bbox_inches='tight')
+                self.fig.savefig(filepath, dpi=300, bbox_inches='tight',
+                                facecolor=self.fig.get_facecolor(), edgecolor='none')
                 self.main_app.status_var.set(f"Exported: {os.path.basename(filepath)}")
             except Exception as e:
                 messagebox.showerror("Export Error", str(e))
@@ -964,7 +968,7 @@ class HomePlotterTab(ttk.Frame):
 
         # Save plot style
         state.plot_style['show_grid'] = self.show_grid_var.get()
-        state.plot_style['show_legend'] = self.show_legend_var.get()
+        state.plot_style['legend_location'] = self.legend_loc_var.get()
         state.plot_style['title'] = self.plot_title_var.get()
         # Save time markers
         state.home_plotter = getattr(state, 'home_plotter', {})
@@ -1022,7 +1026,11 @@ class HomePlotterTab(ttk.Frame):
 
         # Load plot style
         self.show_grid_var.set(state.plot_style.get('show_grid', True))
-        self.show_legend_var.set(state.plot_style.get('show_legend', True))
+        # Backward compat: old projects have 'show_legend' bool, new have 'legend_location' string
+        legend_loc = state.plot_style.get('legend_location')
+        if legend_loc is None:
+            legend_loc = 'upper right' if state.plot_style.get('show_legend', True) else 'Off'
+        self.legend_loc_var.set(legend_loc)
         self.plot_title_var.set(state.plot_style.get('title', ''))
         # Load time markers
         if hasattr(state, 'home_plotter') and state.home_plotter:

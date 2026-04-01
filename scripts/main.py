@@ -25,7 +25,7 @@ from gui.tabs.spectroscopy_tab import SpectroscopyTab
 from gui.tabs.timeshift_tab import TimeshiftTab
 from gui.tabs.luminosity_tab import LuminosityTab
 from gui.tabs.map_visualizer_tab import MapVisualizerTab
-from gui.tabs.figures import FlashOverviewTab, Figure2Tab, Figure3Tab
+from gui.tabs.figures import FlashOverviewTab, Figure1Tab, Figure2Tab, Figure3Tab, VelocityTab
 
 
 
@@ -37,7 +37,6 @@ class StartupDialog(tk.Toplevel):
     Options:
     - Open existing project
     - Create new project
-    - Find event with NLDN (future)
     """
 
     def __init__(self, parent):
@@ -283,11 +282,17 @@ class MainApplication(tk.Tk):
         self.flash_overview_tab = FlashOverviewTab(self.notebook, self)
         self.notebook.add(self.flash_overview_tab, text="Flash Overview")
 
+        self.figure1_tab = Figure1Tab(self.notebook, self)
+        self.notebook.add(self.figure1_tab, text="Phot. Ratio")
+
         self.figure2_tab = Figure2Tab(self.notebook, self)
         self.notebook.add(self.figure2_tab, text="Figure 2")
 
         self.figure3_tab = Figure3Tab(self.notebook, self)
         self.notebook.add(self.figure3_tab, text="Figure 3")
+
+        self.velocity_tab = VelocityTab(self.notebook, self)
+        self.notebook.add(self.velocity_tab, text="Velocity")
 
     def _build_placeholder(self, parent, title, description):
         """Build a placeholder for tabs not yet implemented."""
@@ -404,6 +409,11 @@ class MainApplication(tk.Tk):
                 print(f"Warning: Failed to load flash_overview_tab: {e}")
 
             try:
+                self.figure1_tab.load_from_project()
+            except Exception as e:
+                print(f"Warning: Failed to load figure1_tab: {e}")
+
+            try:
                 self.figure2_tab.load_from_project()
             except Exception as e:
                 print(f"Warning: Failed to load figure2_tab: {e}")
@@ -412,6 +422,11 @@ class MainApplication(tk.Tk):
                 self.figure3_tab.load_from_project()
             except Exception as e:
                 print(f"Warning: Failed to load figure3_tab: {e}")
+
+            try:
+                self.velocity_tab.load_from_project()
+            except Exception as e:
+                print(f"Warning: Failed to load velocity_tab: {e}")
         else:
             messagebox.showerror("Error", f"Failed to load project:\n{filepath}")
 
@@ -436,10 +451,14 @@ class MainApplication(tk.Tk):
                     self.map_tab._save_to_project()
                 if hasattr(self, 'flash_overview_tab'):
                     self.flash_overview_tab._save_to_project()
+                if hasattr(self, 'figure1_tab'):
+                    self.figure1_tab._save_to_project()
                 if hasattr(self, 'figure2_tab'):
                     self.figure2_tab._save_to_project()
                 if hasattr(self, 'figure3_tab'):
                     self.figure3_tab._save_to_project()
+                if hasattr(self, 'velocity_tab'):
+                    self.velocity_tab._save_to_project()
 
                 save_project(self.project_state, self.project_filepath)
                 self.unsaved_changes = False
@@ -478,10 +497,14 @@ class MainApplication(tk.Tk):
                     self.map_tab._save_to_project()
                 if hasattr(self, 'flash_overview_tab'):
                     self.flash_overview_tab._save_to_project()
+                if hasattr(self, 'figure1_tab'):
+                    self.figure1_tab._save_to_project()
                 if hasattr(self, 'figure2_tab'):
                     self.figure2_tab._save_to_project()
                 if hasattr(self, 'figure3_tab'):
                     self.figure3_tab._save_to_project()
+                if hasattr(self, 'velocity_tab'):
+                    self.velocity_tab._save_to_project()
 
                 self.project_state.project_name = os.path.splitext(os.path.basename(filepath))[0]
                 save_project(self.project_state, filepath)

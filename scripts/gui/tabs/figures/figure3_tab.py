@@ -510,7 +510,8 @@ class Figure3Tab(ttk.Frame):
             defaultextension=".png",
             filetypes=[("PNG", "*.png"), ("PDF", "*.pdf"), ("All", "*.*")])
         if path:
-            self.fig.savefig(path, dpi=300, bbox_inches='tight')
+            self.fig.savefig(path, dpi=300, bbox_inches='tight',
+                            facecolor=self.fig.get_facecolor(), edgecolor='none')
             self.main_app.status_var.set(f"Exported: {os.path.basename(path)}")
 
     # =====================================================================

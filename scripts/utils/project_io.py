@@ -96,7 +96,7 @@ class ProjectState:
         # Plot style settings
         self.plot_style = {
             'show_grid': True,
-            'show_legend': True,
+            'legend_location': 'upper right',
             'title': '',
         }
 
@@ -170,6 +170,15 @@ class ProjectState:
             'camera_frames': [],
         }
 
+        self.figure1 = {
+            'time_min': None,
+            'time_max': None,
+            'event_time': None,
+            'show_ratio_337_777': True,
+            'show_ratio_391_777': True,
+            'show_ratio_337_391': True,
+        }
+
         self.figure2 = {
             'time_min': None,
             'time_max': None,
@@ -189,6 +198,25 @@ class ProjectState:
             'fa_y_max': None,
             'intf_elv_min': None,
             'intf_elv_max': None,
+        }
+
+        self.velocity = {
+            'x_start': None, 'x_stop': None, 'event_time': None,
+            'show_grid': True, 'legend_location': 'upper right', 'title': '',
+            'show_fa': True, 'show_intf': True, 'show_sd': True, 'show_lum': True,
+            'show_phot_337': True, 'show_phot_391': True, 'show_phot_777': True,
+            'fa_ymin': None, 'fa_ymax': None,
+            'sd_ymin': None, 'sd_ymax': None,
+            'intf_ymin': None, 'intf_ymax': None,
+            'lum_ymin': None, 'lum_ymax': None,
+            'phot_ymin': None, 'phot_ymax': None,
+            'ae_azi_min': None, 'ae_azi_max': None,
+            'ae_elv_min': None, 'ae_elv_max': None,
+            'ae_time_min': None, 'ae_time_max': None,
+            'fit_t_start': None, 'fit_t_stop': None,
+            'fit_elv_min': None, 'fit_elv_max': None,
+            'x1': 13.9, 'show_fit': True, 'show_velo_text': True,
+            'velo_text_x': None, 'velo_text_y': None,
         }
 
     def to_dict(self):
@@ -212,8 +240,10 @@ class ProjectState:
             'timeshift': self.timeshift,
             'results': self.results,
             'flash_overview': self.flash_overview,
+            'figure1': self.figure1,
             'figure2': self.figure2,
             'figure3': self.figure3,
+            'velocity': self.velocity,
         }
 
     def from_dict(self, data):
@@ -268,11 +298,17 @@ class ProjectState:
         if 'flash_overview' in data:
             self.flash_overview.update(data['flash_overview'])
 
+        if 'figure1' in data:
+            self.figure1.update(data['figure1'])
+
         if 'figure2' in data:
             self.figure2.update(data['figure2'])
 
         if 'figure3' in data:
             self.figure3.update(data['figure3'])
+
+        if 'velocity' in data:
+            self.velocity.update(data['velocity'])
 
 
 def save_project(state, filepath):

@@ -1221,7 +1221,8 @@ class INTFTab(ttk.Frame):
         )
         if filepath:
             try:
-                self.fig.savefig(filepath, dpi=300, bbox_inches='tight')
+                self.fig.savefig(filepath, dpi=300, bbox_inches='tight',
+                                facecolor=self.fig.get_facecolor(), edgecolor='none')
                 self.main_app.status_var.set(f"Exported: {os.path.basename(filepath)}")
             except Exception as e:
                 messagebox.showerror("Export Error", str(e))

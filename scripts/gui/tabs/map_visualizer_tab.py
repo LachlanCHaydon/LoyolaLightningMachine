@@ -939,7 +939,8 @@ class MapVisualizerTab(ttk.Frame):
                             family='monospace')
 
             # Save
-            self.fig.savefig(filepath, dpi=300, bbox_inches='tight')
+            self.fig.savefig(filepath, dpi=300, bbox_inches='tight',
+                            facecolor=self.fig.get_facecolor(), edgecolor='none')
 
             # Redraw to remove metadata box from interactive view
             self._update_map()

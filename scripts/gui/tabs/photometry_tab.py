@@ -68,6 +68,11 @@ class PhotometryTab(ttk.Frame):
         self.show_ratios_var = tk.BooleanVar(value=False)
         self.plot_title_var = tk.StringVar(value="")
 
+        # Ratio visibility toggles
+        self.show_ratio_337_777_var = tk.BooleanVar(value=True)
+        self.show_ratio_391_777_var = tk.BooleanVar(value=True)
+        self.show_ratio_337_391_var = tk.BooleanVar(value=True)
+
         # Y-axis limits
         self.y_min_var = tk.StringVar(value="")
         self.y_max_var = tk.StringVar(value="")
@@ -234,6 +239,13 @@ class PhotometryTab(ttk.Frame):
         # Show ratios checkbox
         ttk.Checkbutton(frame, text="Show ratio plot below waveforms",
                         variable=self.show_ratios_var).pack(anchor='w', pady=2)
+
+        # Individual ratio toggles
+        ratio_vis = ttk.LabelFrame(frame, text="Show Ratios", padding=2)
+        ratio_vis.pack(fill=tk.X, pady=2)
+        ttk.Checkbutton(ratio_vis, text="337/777 (Blue)", variable=self.show_ratio_337_777_var).pack(anchor='w')
+        ttk.Checkbutton(ratio_vis, text="391/777 (Purple)", variable=self.show_ratio_391_777_var).pack(anchor='w')
+        ttk.Checkbutton(ratio_vis, text="337/391 (Orange)", variable=self.show_ratio_337_391_var).pack(anchor='w')
 
         # Calculated ratios display
         ttk.Label(frame, text="Peak Ratios in Time Range:").pack(anchor='w', pady=2)
@@ -544,23 +556,22 @@ class PhotometryTab(ttk.Frame):
         """Plot channel ratios on secondary axis."""
         time = data['time']
 
-        # Calculate point-by-point ratios
-        if data['ch0'] is not None and data['ch2'] is not None:
+        # Calculate and plot point-by-point ratios (respecting toggles)
+        if self.show_ratio_337_777_var.get() and data['ch0'] is not None and data['ch2'] is not None:
             with np.errstate(divide='ignore', invalid='ignore'):
                 ratio_337_777 = data['ch0'] / data['ch2']
-                # Replace inf/nan with nan for log scale compatibility
                 ratio_337_777 = np.where(np.isfinite(ratio_337_777), ratio_337_777, np.nan)
             ax.plot(time, ratio_337_777, color='blue', linewidth=0.5,
                     label='337/777', alpha=0.8)
 
-        if data['ch1'] is not None and data['ch2'] is not None:
+        if self.show_ratio_391_777_var.get() and data['ch1'] is not None and data['ch2'] is not None:
             with np.errstate(divide='ignore', invalid='ignore'):
                 ratio_391_777 = data['ch1'] / data['ch2']
                 ratio_391_777 = np.where(np.isfinite(ratio_391_777), ratio_391_777, np.nan)
             ax.plot(time, ratio_391_777, color='purple', linewidth=0.5,
                     label='391/777', alpha=0.8)
 
-        if data['ch0'] is not None and data['ch1'] is not None:
+        if self.show_ratio_337_391_var.get() and data['ch0'] is not None and data['ch1'] is not None:
             with np.errstate(divide='ignore', invalid='ignore'):
                 ratio_337_391 = data['ch0'] / data['ch1']
                 ratio_337_391 = np.where(np.isfinite(ratio_337_391), ratio_337_391, np.nan)
@@ -595,7 +606,8 @@ class PhotometryTab(ttk.Frame):
         )
         if filepath:
             try:
-                self.fig.savefig(filepath, dpi=300, bbox_inches='tight')
+                self.fig.savefig(filepath, dpi=300, bbox_inches='tight',
+                                facecolor=self.fig.get_facecolor(), edgecolor='none')
                 self.main_app.status_var.set(f"Exported: {os.path.basename(filepath)}")
             except Exception as e:
                 messagebox.showerror("Export Error", str(e))

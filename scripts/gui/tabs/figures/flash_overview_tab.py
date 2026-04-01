@@ -91,7 +91,7 @@ class FlashOverviewTab(ttk.Frame):
         # Style
         self.intf_calibrated_var = tk.BooleanVar(value=True)
         self.show_grid_var = tk.BooleanVar(value=True)
-        self.show_legend_var = tk.BooleanVar(value=True)
+        self.legend_loc_var = tk.StringVar(value="upper right")
         self.plot_title_var = tk.StringVar(value="")
 
         # Camera frames
@@ -241,7 +241,13 @@ class FlashOverviewTab(ttk.Frame):
         frame.pack(fill=tk.X, padx=5, pady=5)
 
         ttk.Checkbutton(frame, text="Show Grid", variable=self.show_grid_var).pack(anchor='w')
-        ttk.Checkbutton(frame, text="Show Legend", variable=self.show_legend_var).pack(anchor='w')
+        row = ttk.Frame(frame)
+        row.pack(fill=tk.X, pady=2)
+        ttk.Label(row, text="Legend:").pack(side=tk.LEFT)
+        ttk.Combobox(row, textvariable=self.legend_loc_var,
+                     values=["Off", "upper right", "upper left",
+                             "lower right", "lower left", "best"],
+                     width=14, state='readonly').pack(side=tk.LEFT, padx=2)
 
         row = ttk.Frame(frame)
         row.pack(fill=tk.X, pady=2)
@@ -249,7 +255,7 @@ class FlashOverviewTab(ttk.Frame):
         ttk.Entry(row, textvariable=self.plot_title_var, width=25).pack(side=tk.LEFT, padx=2)
 
     def _build_camera_frames_section(self):
-        frame = ttk.LabelFrame(self.scrollable_frame, text="Camera Frames (v711)", padding=5)
+        frame = ttk.LabelFrame(self.scrollable_frame, text="Camera Frames", padding=5)
         frame.pack(fill=tk.X, padx=5, pady=5)
 
         row = ttk.Frame(frame)
@@ -290,17 +296,14 @@ class FlashOverviewTab(ttk.Frame):
         ttk.Label(row_frame, text="us:").pack(side=tk.LEFT)
         ttk.Entry(row_frame, textvariable=ts_var, width=10).pack(side=tk.LEFT, padx=1)
 
-        idx = len(self.frame_rows)
         ttk.Button(row_frame, text="X", width=2,
-                   command=lambda: self._remove_frame_row(idx, row_frame)).pack(side=tk.LEFT, padx=2)
+                   command=lambda rf=row_frame: self._remove_frame_row(rf)).pack(side=tk.LEFT, padx=2)
 
         self.frame_rows.append((fn_var, ts_var, row_frame))
 
-    def _remove_frame_row(self, idx, widget):
+    def _remove_frame_row(self, widget):
         widget.destroy()
-        if idx < len(self.frame_rows):
-            self.frame_rows[idx] = None
-        self.frame_rows = [r for r in self.frame_rows if r is not None]
+        self.frame_rows = [r for r in self.frame_rows if r[2] is not widget]
 
     def _build_action_buttons(self):
         frame = ttk.Frame(self.scrollable_frame, padding=5)
@@ -593,9 +596,7 @@ class FlashOverviewTab(ttk.Frame):
                     self.show_phot_777_var.get())
 
         if any_phot and self.photometer_handler.is_loaded:
-            duration = t_max - t_min
-            downsample = max(1, int(duration / 10000))
-
+            downsample = 1
             data = self.photometer_handler.get_data_in_event_time(t_min, t_max, downsample)
             if data and data['time'] is not None and len(data['time']) > 0:
                 if self.show_phot_337_var.get() and data['ch0'] is not None:
@@ -727,8 +728,9 @@ class FlashOverviewTab(ttk.Frame):
         if title:
             ax.set_title(title, fontsize=14)
 
-        if self.show_legend_var.get() and legend_handles:
-            ax.legend(legend_handles, legend_labels, loc='upper right', fontsize=9)
+        legend_loc = self.legend_loc_var.get()
+        if legend_loc != "Off" and legend_handles:
+            ax.legend(legend_handles, legend_labels, loc=legend_loc, fontsize=9)
 
         # Layout — leave right margin for twinx spines
         # Apply BEFORE drawing frame strip so pixel extents are stable
@@ -833,7 +835,8 @@ class FlashOverviewTab(ttk.Frame):
             defaultextension=".png",
             filetypes=[("PNG", "*.png"), ("PDF", "*.pdf"), ("All", "*.*")])
         if path:
-            self.fig.savefig(path, dpi=300, bbox_inches='tight')
+            self.fig.savefig(path, dpi=300, bbox_inches='tight',
+                            facecolor=self.fig.get_facecolor(), edgecolor='none')
             self.main_app.status_var.set(f"Exported: {os.path.basename(path)}")
 
     # =====================================================================
