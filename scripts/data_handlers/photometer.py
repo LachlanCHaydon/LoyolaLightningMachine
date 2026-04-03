@@ -212,7 +212,7 @@ class PhotometerHandler:
         
         Returns:
         --------
-        dict with keys: 'ratio_337_777', 'ratio_391_777', 'ratio_337_391'
+        dict with keys: 'ratio_337_777', 'ratio_391_777', 'ratio_391_337'
         """
         data = self.get_data_in_event_time(t_start, t_stop)
         if data is None:
@@ -235,8 +235,8 @@ class PhotometerHandler:
             ch0_max = np.max(data['ch0'])
             ch1_max = np.max(data['ch1'])
             if ch1_max > 0:
-                result['ratio_337_391'] = ch0_max / ch1_max
-        
+                result['ratio_391_337'] = ch1_max / ch0_max
+
         return result
     
     def get_time_range(self) -> Tuple[float, float]:

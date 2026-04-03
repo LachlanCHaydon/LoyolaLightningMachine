@@ -71,7 +71,7 @@ class PhotometryTab(ttk.Frame):
         # Ratio visibility toggles
         self.show_ratio_337_777_var = tk.BooleanVar(value=True)
         self.show_ratio_391_777_var = tk.BooleanVar(value=True)
-        self.show_ratio_337_391_var = tk.BooleanVar(value=True)
+        self.show_ratio_391_337_var = tk.BooleanVar(value=True)
 
         # Y-axis limits
         self.y_min_var = tk.StringVar(value="")
@@ -245,14 +245,14 @@ class PhotometryTab(ttk.Frame):
         ratio_vis.pack(fill=tk.X, pady=2)
         ttk.Checkbutton(ratio_vis, text="337/777 (Blue)", variable=self.show_ratio_337_777_var).pack(anchor='w')
         ttk.Checkbutton(ratio_vis, text="391/777 (Purple)", variable=self.show_ratio_391_777_var).pack(anchor='w')
-        ttk.Checkbutton(ratio_vis, text="337/391 (Orange)", variable=self.show_ratio_337_391_var).pack(anchor='w')
+        ttk.Checkbutton(ratio_vis, text="337/391 (Orange)", variable=self.show_ratio_391_337_var).pack(anchor='w')
 
         # Calculated ratios display
         ttk.Label(frame, text="Peak Ratios in Time Range:").pack(anchor='w', pady=2)
 
         self.ratio_337_777_var = tk.StringVar(value="--")
         self.ratio_391_777_var = tk.StringVar(value="--")
-        self.ratio_337_391_var = tk.StringVar(value="--")
+        self.ratio_391_337_var = tk.StringVar(value="--")
 
         row = ttk.Frame(frame)
         row.pack(fill=tk.X, pady=1)
@@ -266,8 +266,8 @@ class PhotometryTab(ttk.Frame):
 
         row = ttk.Frame(frame)
         row.pack(fill=tk.X, pady=1)
-        ttk.Label(row, text="337/391:", width=10).pack(side=tk.LEFT)
-        ttk.Label(row, textvariable=self.ratio_337_391_var, width=10).pack(side=tk.LEFT)
+        ttk.Label(row, text="391/337:", width=10).pack(side=tk.LEFT)
+        ttk.Label(row, textvariable=self.ratio_391_337_var, width=10).pack(side=tk.LEFT)
 
         # Calculate button
         ttk.Button(frame, text="Calculate Ratios", command=self._calculate_ratios).pack(pady=5)
@@ -418,10 +418,10 @@ class PhotometryTab(ttk.Frame):
         else:
             self.ratio_391_777_var.set("--")
 
-        if 'ratio_337_391' in ratios:
-            self.ratio_337_391_var.set(f"{ratios['ratio_337_391']:.4f}")
+        if 'ratio_391_337' in ratios:
+            self.ratio_391_337_var.set(f"{ratios['ratio_391_337']:.4f}")
         else:
-            self.ratio_337_391_var.set("--")
+            self.ratio_391_337_var.set("--")
 
         self.main_app.status_var.set("Ratios calculated")
 
@@ -571,12 +571,12 @@ class PhotometryTab(ttk.Frame):
             ax.plot(time, ratio_391_777, color='purple', linewidth=0.5,
                     label='391/777', alpha=0.8)
 
-        if self.show_ratio_337_391_var.get() and data['ch0'] is not None and data['ch1'] is not None:
+        if self.show_ratio_391_337_var.get() and data['ch0'] is not None and data['ch1'] is not None:
             with np.errstate(divide='ignore', invalid='ignore'):
-                ratio_337_391 = data['ch0'] / data['ch1']
-                ratio_337_391 = np.where(np.isfinite(ratio_337_391), ratio_337_391, np.nan)
-            ax.plot(time, ratio_337_391, color='orange', linewidth=0.5,
-                    label='337/391', alpha=0.8)
+                ratio_391_337 = data['ch1'] / data['ch0']
+                ratio_391_337 = np.where(np.isfinite(ratio_391_337), ratio_391_337, np.nan)
+            ax.plot(time, ratio_391_337, color='brown', linewidth=0.5,
+                    label='391/337', alpha=0.8)
 
         # Use log scale like the 2023 script
         ax.set_yscale('log')
