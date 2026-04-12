@@ -6,7 +6,7 @@ Handles photometer data visualization and ratio analysis.
 Features:
 - Load photometer binary data (337nm, 391nm, 777nm channels)
 - Plot waveforms with optional FA/INTF overlay
-- Compute and plot channel ratios (337/777, 391/777, 337/391)
+- Compute and plot channel ratios (337/777, 391/777, 391/337)
 - Time alignment with second offset
 - Irradiance calibration display
 """
@@ -245,7 +245,7 @@ class PhotometryTab(ttk.Frame):
         ratio_vis.pack(fill=tk.X, pady=2)
         ttk.Checkbutton(ratio_vis, text="337/777 (Blue)", variable=self.show_ratio_337_777_var).pack(anchor='w')
         ttk.Checkbutton(ratio_vis, text="391/777 (Purple)", variable=self.show_ratio_391_777_var).pack(anchor='w')
-        ttk.Checkbutton(ratio_vis, text="337/391 (Orange)", variable=self.show_ratio_391_337_var).pack(anchor='w')
+        ttk.Checkbutton(ratio_vis, text="391/337 (Brown)", variable=self.show_ratio_391_337_var).pack(anchor='w')
 
         # Calculated ratios display
         ttk.Label(frame, text="Peak Ratios in Time Range:").pack(anchor='w', pady=2)

@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /c/Users/missn/Desktop/LightningMachine/scripts && python -c \"from data_handlers.tasd import TASDHandler; print\\('TASDHandler imported OK'\\); h = TASDHandler\\(\\); print\\('Fields:', list\\(h.__dict__.keys\\(\\)\\)\\)\")",
+      "Bash(cd /c/Users/missn/Desktop/LightningMachine/scripts && python -c \"from data_handlers import TASDHandler; print\\('Package import OK'\\)\")",
+      "Bash(find /c/Users/missn/Desktop/LightningMachine -type d -name \"SD_*\" 2>/dev/null | head -5)",
+      "Bash(cd /c/Users/missn/Desktop/LightningMachine/scripts && python -c \"from data_handlers.tasd import TASDHandler; print\\('Import OK'\\)\")",
+      "Bash(cd /c/Users/missn/Desktop/LightningMachine/scripts && python -c \"\nfrom data_handlers.tasd import TASDHandler\nfrom utils.ta_tools import calculate_azimuth_to_detector\nimport numpy as np\n\nh = TASDHandler\\(\\)\nh.load_coordinates\\('tasd_gpscoors.txt'\\)\nsuccess = h.load_directory\\('../Data/2025/TASD/SD_0921_025353/', '025353'\\)\nprint\\(f'Loaded: {success}, Detectors: {len\\(h.detectors\\)}'\\)\n\ntriggered = h.get_triggered_detectors\\(\\)\nprint\\(f'Triggered \\(VEM>0\\): {len\\(triggered\\)}'\\)\n\ndet_azis = []\nfor det in triggered:\n    azi = calculate_azimuth_to_detector\\(det['lat'], det['lon']\\)\n    det_azis.append\\(azi\\)\n    print\\(f'  {det[\\\\\"detector_id\\\\\"]}: azi={azi:.4f}, VEM={det[\\\\\"vem\\\\\"]:.3f}'\\)\n\nprint\\(f'Detector IDs: {[d[\\\\\"detector_id\\\\\"] for d in triggered]}'\\)\n\")",
+      "Bash(cd /c/Users/missn/Desktop/LightningMachine/scripts && python -c \"\nfrom data_handlers.tasd import TASDHandler\n\n# Test 1: WITH coordinates \\(INTF tab scenario\\)\nh1 = TASDHandler\\(\\)\nh1.load_coordinates\\('tasd_gpscoors.txt'\\)\nh1.load_directory\\('../Data/2025/TASD/SD_0921_025353/', '025353'\\)\nprint\\(f'With coords: {len\\(h1.detectors\\)} detectors, {len\\(h1.get_triggered_detectors\\(\\)\\)} triggered'\\)\n\n# Test 2: WITHOUT coordinates \\(home plotter scenario — no gpscoors nearby\\)\nh2 = TASDHandler\\(\\)\n# no load_coordinates call\nh2.load_directory\\('../Data/2025/TASD/SD_0921_025353/', '025353'\\)\nprint\\(f'No coords: {len\\(h2.detectors\\)} detectors, {len\\(h2.get_triggered_detectors\\(\\)\\)} triggered'\\)\nfor d in h2.detectors:\n    print\\(f'  {d[\\\\\"detector_id\\\\\"]}: lat={d[\\\\\"lat\\\\\"]}, has waveform={len\\(d[\\\\\"time\\\\\"]\\)} pts'\\)\n\")",
+      "Bash(cd /c/Users/missn/Desktop/LightningMachine/scripts && python -c \"from analysis.timeshift import TimeshiftCalculator; print\\('TimeshiftCalculator imported OK'\\)\")",
+      "Bash(cd \"C:\\\\Users\\\\missn\\\\Desktop\\\\LightningMachine\\\\scripts\" && python -c \"from analysis.timeshift import TimeshiftCalculator; print\\('analysis import OK'\\)\")",
+      "Bash(cd \"C:\\\\Users\\\\missn\\\\Desktop\\\\LightningMachine\\\\scripts\" && python -c \"from gui.tabs.timeshift_tab import TimeshiftTab; print\\('TimeshiftTab import OK'\\)\")",
+      "Bash(cd \"C:\\\\Users\\\\missn\\\\Desktop\\\\LightningMachine\\\\scripts\" && python -c \"from utils.project_io import ProjectState; s = ProjectState\\(\\); d = s.to_dict\\(\\); assert 'timeshift' in d; print\\(f'ProjectState timeshift keys: {list\\(d[\\\\\"timeshift\\\\\"].keys\\(\\)\\)}'\\)\")",
+      "Bash(cd /c/Users/missn/Desktop/LightningMachine/scripts && python -c \"from gui.tabs.timeshift_tab import TimeshiftTab; print\\('Import OK'\\)\" 2>&1)",
+      "Bash(cd /c/Users/missn/Desktop/LightningMachine/scripts && python -c \"from analysis.timeshift import TimeshiftCalculator; tc = TimeshiftCalculator\\(\\); print\\(f'c={tc.c}, ref_lat={tc.ref_lat}'\\); print\\('OK'\\)\" 2>&1)",
+      "Bash(python -c \":*)",
+      "Bash(find /c/Users/missn/Desktop/LightningMachine/scripts -name *figure*tab* -o -name figure*)",
+      "Read(//mnt/c/Users/missn/Desktop/LightningMachine/**)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\(''gui/tabs/figures/velocity_tab.py''\\).read\\(\\)\\); print\\(''OK''\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\(''main.py''\\).read\\(\\)\\); ast.parse\\(open\\(''utils/project_io.py''\\).read\\(\\)\\); ast.parse\\(open\\(''gui/tabs/__init__.py''\\).read\\(\\)\\); ast.parse\\(open\\(''gui/tabs/figures/__init__.py''\\).read\\(\\)\\); print\\(''All OK''\\)\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('gui/tabs/figures/velocity_tab.py', doraise=True\\); print\\('OK'\\)\")"
+    ]
+  }
+}
