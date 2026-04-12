@@ -924,7 +924,7 @@ class VelocityTab(ttk.Frame):
 
         # Finalize layout before adding legend/colorbar
         self.fig.tight_layout()
-        self.fig.subplots_adjust(left=0.05, right=0.88)
+        self.fig.subplots_adjust(left=0.05, right=0.90)
 
 
         # Colorbar matched to ax_ae's actual square (set_box_aspect shrinks
