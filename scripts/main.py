@@ -1,5 +1,5 @@
 """
-TGF Lightning Analysis Tool - Main Application
+TGF Lightning Analysis Ca n - Main Application
 =============================================
 Entry point and main window for the TGF analysis tool.
 """
@@ -25,7 +25,7 @@ from gui.tabs.spectroscopy_tab import SpectroscopyTab
 from gui.tabs.timeshift_tab import TimeshiftTab
 from gui.tabs.luminosity_tab import LuminosityTab
 from gui.tabs.map_visualizer_tab import MapVisualizerTab
-from gui.tabs.figures import FlashOverviewTab, Figure1Tab, Figure2Tab, Figure3Tab, VelocityTab
+from gui.tabs.figures import FlashOverviewTab, Figure1Tab, Figure2Tab, VelocityTab
 
 
 
@@ -286,10 +286,7 @@ class MainApplication(tk.Tk):
         self.notebook.add(self.figure1_tab, text="Phot. Ratio")
 
         self.figure2_tab = Figure2Tab(self.notebook, self)
-        self.notebook.add(self.figure2_tab, text="Figure 2")
-
-        self.figure3_tab = Figure3Tab(self.notebook, self)
-        self.notebook.add(self.figure3_tab, text="Figure 3")
+        self.notebook.add(self.figure2_tab, text="INTF-Overlay")
 
         self.velocity_tab = VelocityTab(self.notebook, self)
         self.notebook.add(self.velocity_tab, text="Velocity")
@@ -419,11 +416,6 @@ class MainApplication(tk.Tk):
                 print(f"Warning: Failed to load figure2_tab: {e}")
 
             try:
-                self.figure3_tab.load_from_project()
-            except Exception as e:
-                print(f"Warning: Failed to load figure3_tab: {e}")
-
-            try:
                 self.velocity_tab.load_from_project()
             except Exception as e:
                 print(f"Warning: Failed to load velocity_tab: {e}")
@@ -455,8 +447,6 @@ class MainApplication(tk.Tk):
                     self.figure1_tab._save_to_project()
                 if hasattr(self, 'figure2_tab'):
                     self.figure2_tab._save_to_project()
-                if hasattr(self, 'figure3_tab'):
-                    self.figure3_tab._save_to_project()
                 if hasattr(self, 'velocity_tab'):
                     self.velocity_tab._save_to_project()
 
@@ -501,8 +491,6 @@ class MainApplication(tk.Tk):
                     self.figure1_tab._save_to_project()
                 if hasattr(self, 'figure2_tab'):
                     self.figure2_tab._save_to_project()
-                if hasattr(self, 'figure3_tab'):
-                    self.figure3_tab._save_to_project()
                 if hasattr(self, 'velocity_tab'):
                     self.velocity_tab._save_to_project()
 

@@ -943,12 +943,8 @@ class VelocityTab(ttk.Frame):
         # Waveform legend — fig.legend renders above all twin axes
         legend_loc = self.legend_loc_var.get()
         if legend_loc != "Off" and legend_handles:
-            pos = ax_w.get_position()
-            self.fig.legend(legend_handles, legend_labels,
-                            loc='upper left',
-                            bbox_to_anchor=(pos.x0 + 0.01, pos.y1 - 0.01),
-                            bbox_transform=self.fig.transFigure,
-                            fontsize=9, framealpha=0.9)
+            ax_w.legend(legend_handles, legend_labels,
+                        loc=legend_loc, fontsize=9, framealpha=0.9)
 
     # =====================================================================
     # Azi-Elv Scatter (right panel) — mirrors INTF tab _update_plot az_el
@@ -1094,10 +1090,11 @@ class VelocityTab(ttk.Frame):
     def _export(self):
         path = filedialog.asksaveasfilename(
             defaultextension=".png",
-            filetypes=[("PNG", "*.png"), ("PDF", "*.pdf"), ("All", "*.*")])
+            filetypes=[("PNG", "*.png"), ("PDF", "*.pdf"), ("SVG", "*.svg"), ("All", "*.*")])
         if path:
             self.fig.savefig(path, dpi=600, bbox_inches='tight',
-                            facecolor=self.fig.get_facecolor(), edgecolor='none')
+                            facecolor='white', edgecolor='none',
+                            transparent=False)
             self.main_app.status_var.set(f"Exported: {os.path.basename(path)}")
 
     # =====================================================================
